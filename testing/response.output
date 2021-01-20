@@ -1,0 +1,248 @@
+TESTING RESULT: 
+
+######## BASIC FUNCTIONALITY FOR 200 CODE ######## 
+
+# TESTING: header and body well set 
+
+>> Input: 
+GET /index.html HTTP/1.1
+Host: Ha
+
+>> Output: 
+HTTP/1.1 200 OK
+Server: Go-Triton-Server-1.0
+Last-Modified:2020-11-06 11:03:08.491258169 -0800 PST
+Content-Length: 307
+Content-Type: text/html
+
+
+# TESTING: valid kitten.jpg 
+
+>> Input: 
+GET /kitten.jpg HTTP/1.1
+Host: Ha
+
+>> Output: 
+HTTP/1.1 200 OK
+Server: Go-Triton-Server-1.0
+Last-Modified:2020-11-06 11:03:08.492966733 -0800 PST
+Content-Length: 145459
+Content-Type: image/jpeg
+
+
+# TESTING: valid UCSD_Seal.png 
+
+>> Input: 
+GET /UCSD_Seal.png HTTP/1.1
+Host: Ha
+
+>> Output: 
+HTTP/1.1 200 OK
+Server: Go-Triton-Server-1.0
+Last-Modified:2020-11-06 11:03:08.488696074 -0800 PST
+Content-Length: 637155
+Content-Type: image/png
+
+
+# TESTING: valid subdirectory 
+
+>> Input: 
+GET /subdir1/ HTTP/1.1
+Host: Ha
+
+>> Output: 
+HTTP/1.1 200 OK
+Server: Go-Triton-Server-1.0
+Last-Modified:2020-11-06 11:03:08.49403725 -0800 PST
+Content-Length: 177
+Content-Type: text/html
+
+
+# TESTING: valid double-subdirectory 
+
+>> Input: 
+GET /subdir1/subdir11/ HTTP/1.1
+Host: Ha
+
+>> Output: 
+HTTP/1.1 200 OK
+Server: Go-Triton-Server-1.0
+Last-Modified:2020-11-06 11:03:08.495069619 -0800 PST
+Content-Length: 184
+Content-Type: text/html
+
+
+# TESTING: valid directory without slash ending 
+
+>> Input: 
+GET /subdir1 HTTP/1.1
+Host: Ha
+
+>> Output: 
+HTTP/1.1 200 OK
+Server: Go-Triton-Server-1.0
+Last-Modified:2020-11-06 11:03:08.49403725 -0800 PST
+Content-Length: 177
+Content-Type: text/html
+
+
+# TESTING: unvalid extension MIME 
+
+>> Input: 
+GET /index.xxxxx HTTP/1.1
+Host: Ha
+
+>> Output: 
+HTTP/1.1 404 File Not Found
+Server: Go-Triton-Server-1.0
+
+
+######## CONCURRENCY Pipelining ######## 
+
+HTTP/1.1 200 OK
+Server: Go-Triton-Server-1.0
+Last-Modified:2020-11-06 11:03:08.491258169 -0800 PST
+Content-Length: 307
+Content-Type: text/html
+
+<html>
+<head>
+<title>Basic index file</title>
+</head>
+<body>
+<h1>This is a basic index file</h1>
+You can use this for testing.
+<p>
+<ul>
+<li><a href=UCSD_Seal.png alt="UCSD Seal">UCSD seal</a>
+<li><a href=kitten.jpg alt="Kitten">Kitten photo</a>
+<li><a href=subdir1/>A subdirectory</a>
+</ul>
+</body>
+</html>
+HTTP/1.1 400 Bad Request
+Server: Go-Triton-Server-1.0
+
+HTTP/1.1 400 Client Error
+Server: Go-Triton-Server-1.0
+Last-Modified:
+Content-Length: 0
+Content-Type: 
+
+<html>
+	<head>
+		<title>400 Bad Request</title>
+	</head>
+	<body>
+		<h1>400 Bad Request</h1>
+	</body>
+</html>
+
+
+# TESTING CASE: timeout: 
+
+>> Input: 
+GET /index.html HTTP/1.1
+
+sleep 10 sec... 
+Host: Ha
+
+>> Output: 
+HTTP/1.1 400 Bad Request
+Server: Go-Triton-Server-1.0
+
+
+# TESTING: connection close 
+
+>> Input: 
+GET /index.html HTTP/1.1
+Host: Ha
+Connection: Close
+
+
+>> Output: 
+HTTP/1.1 200 OK
+Server: Go-Triton-Server-1.0
+Last-Modified:2020-11-06 11:03:08.491258169 -0800 PST
+Content-Length: 307
+Content-Type: text/html
+
+
+######## BASIC FUNCTIONALITY FOR NON-200 ERROR CODE ######## 
+
+ # TESTING: missing CRLF 
+
+>> Input: 
+GET /index.html HTTP/1.1
+Host: Ha
+>> Output: 
+HTTP/1.1 400 Bad Request
+Server: Go-Triton-Server-1.0
+
+
+# TESTING: partical CRLF 
+
+>> Input: 
+GET /index.html HTTP/1.1
+Host: Ha
+>> Output: 
+HTTP/1.1 400 Bad Request
+Server: Go-Triton-Server-1.0
+
+
+# TESTING: partical CRLF 
+
+>> Input: 
+GET HTTP/1.1Host: Ha
+>> Output: 
+HTTP/1.1 400 Bad Request
+Server: Go-Triton-Server-1.0
+
+
+# TESTING: file not found 
+
+>> Input: 
+GET /a123123.html HTTP/1.1
+Host: Ha
+
+>> Output: 
+HTTP/1.1 404 File Not Found
+Server: Go-Triton-Server-1.0
+
+
+# TESTING: urls escape docroot 
+
+>> Input: 
+GET /subdir1/subdir11/../index.html HTTP/1.1
+Host: Ha
+
+>> Output: 
+HTTP/1.1 200 OK
+Server: Go-Triton-Server-1.0
+Last-Modified:2020-11-06 11:03:08.49403725 -0800 PST
+Content-Length: 177
+Content-Type: text/html
+
+
+# TESTING: out of docroot 
+
+>> Input: 
+GET /../../index.html HTTP/1.1
+Host: Ha
+
+>> Output: 
+HTTP/1.1 404 File Not Found
+Server: Go-Triton-Server-1.0
+
+
+# TESTING: filepath without slash beginning 
+
+>> Input: 
+GET index.html HTTP/1.1
+Host: Ha
+
+>> Output: 
+HTTP/1.1 400 Bad Request
+Server: Go-Triton-Server-1.0
+
+
